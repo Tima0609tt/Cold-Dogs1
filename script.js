@@ -21,26 +21,176 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Quantity Modal Variables
+let quantityModal, quantityCloseBtn, selectedProductName, selectedProductPrice, quantityValue, totalPrice;
+let currentProductData = null;
+let currentQuantity = 1;
+
+// Initialize quantity modal
+function initializeQuantityModal() {
+    quantityModal = document.getElementById('quantityModal');
+    quantityCloseBtn = document.getElementById('quantityCloseBtn');
+    selectedProductName = document.getElementById('selectedProductName');
+    selectedProductPrice = document.getElementById('selectedProductPrice');
+    quantityValue = document.getElementById('quantityValue');
+    totalPrice = document.getElementById('totalPrice');
+
+    // Event listeners
+    if (quantityCloseBtn) quantityCloseBtn.addEventListener('click', closeQuantityModal);
+    window.addEventListener('click', (e) => { if (e.target === quantityModal) closeQuantityModal(); });
+
+    // Quantity controls
+    document.getElementById('decreaseQty').addEventListener('click', () => changeQuantity(-1));
+    document.getElementById('increaseQty').addEventListener('click', () => changeQuantity(1));
+
+    // Preset buttons
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            setQuantity(parseInt(this.dataset.qty));
+        });
+    });
+
+    // Action buttons
+    document.getElementById('confirmAddToCart').addEventListener('click', confirmAddToCart);
+    document.getElementById('cancelAddToCart').addEventListener('click', closeQuantityModal);
+}
+
+function openQuantityModal(productData) {
+    if (!quantityModal) return;
+
+    currentProductData = productData;
+    currentQuantity = 1;
+
+    // Update modal content
+    selectedProductName.textContent = productData.name;
+    selectedProductPrice.textContent = `Цена: ${productData.price}`;
+    quantityValue.textContent = currentQuantity;
+    updateTotalPrice();
+
+    // Reset active preset
+    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.preset-btn[data-qty="1"]').classList.add('active');
+
+    quantityModal.style.display = 'block';
+}
+
+function closeQuantityModal() {
+    if (!quantityModal) return;
+    quantityModal.style.display = 'none';
+    currentProductData = null;
+}
+
+function changeQuantity(delta) {
+    const newQuantity = currentQuantity + delta;
+    if (newQuantity >= 1 && newQuantity <= 99) {
+        setQuantity(newQuantity);
+    }
+}
+
+function setQuantity(qty) {
+    currentQuantity = qty;
+    quantityValue.textContent = currentQuantity;
+    updateTotalPrice();
+
+    // Update active preset
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        if (parseInt(btn.dataset.qty) === qty) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+function updateTotalPrice() {
+    if (!currentProductData) return;
+
+    const price = parsePrice(currentProductData.price);
+    const total = price * currentQuantity;
+    totalPrice.textContent = `₽${total.toLocaleString()}`;
+}
+
+function parsePrice(priceString) {
+    // Extract number from price string like "₽130" or "₽1,200"
+    const match = priceString.match(/₽([\d,]+)/);
+    if (match) {
+        return parseInt(match[1].replace(/,/g, ''));
+    }
+    return 0;
+}
+
+function confirmAddToCart() {
+    if (!currentProductData) return;
+
+    // Add to cart logic here
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+        // User is logged in - create order
+        addToCartLoggedIn(currentProductData, currentQuantity);
+    } else {
+        // User not logged in
+        addToCartNotLoggedIn(currentProductData, currentQuantity);
+    }
+
+    closeQuantityModal();
+}
+
+async function addToCartLoggedIn(productData, quantity) {
+    try {
+        const userId = localStorage.getItem('user_id');
+        const result = await window.browserDB.createOrder({
+            userId: parseInt(userId),
+            productName: productData.name,
+            price: productData.price,
+            period: productData.period || 'Одноразовая покупка',
+            status: 'completed',
+            quantity: quantity
+        });
+
+        if (result) {
+            showNotification(`Добавлено в корзину: ${productData.name} x${quantity}`);
+        } else {
+            throw new Error('Ошибка создания заказа');
+        }
+    } catch (error) {
+        showNotification('Ошибка добавления в корзину. Попробуйте позже.', 'error');
+    }
+}
+
+function addToCartNotLoggedIn(productData, quantity) {
+    showNotification(`Вы выбрали: ${productData.name} x${quantity} за ${totalPrice.textContent}. Войдите в систему для оформления заказа!`);
+}
+
 // Add to cart functionality
 document.querySelectorAll('.product-button').forEach(button => {
     button.addEventListener('click', function(e) {
         e.preventDefault();
-        
-        // Add visual feedback
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
-        this.style.background = 'var(--accent-gold)';
-        this.style.color = 'var(--text-dark)';
-        
-        // Reset after 2 seconds
-        setTimeout(() => {
-            this.innerHTML = originalText;
-            this.style.background = '';
-            this.style.color = '';
-        }, 2000);
-        
-        // Show notification
-        showNotification('Товар добавлен в корзину!');
+
+        const productCard = this.closest('.product-card');
+        const productName = productCard.querySelector('.product-title').textContent;
+        const priceOptions = productCard.querySelectorAll('.price-option');
+
+        let productData = {
+            name: productName,
+            price: '',
+            period: ''
+        };
+
+        if (priceOptions.length > 0) {
+            // Product with multiple price options - use first one as default
+            const firstOption = priceOptions[0];
+            productData.price = firstOption.querySelector('.price').textContent;
+            productData.period = firstOption.querySelector('.price-period').textContent;
+        } else {
+            // Single price product
+            const priceElement = productCard.querySelector('.price');
+            if (priceElement) {
+                productData.price = priceElement.textContent;
+            }
+        }
+
+        // Open quantity modal
+        openQuantityModal(productData);
     });
 });
 
@@ -160,11 +310,10 @@ function setupAuthFormHandler() {
     if (authForm) {
         authForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const username = document.getElementById('authUsername').value.trim();
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
 
-            if (!username || !email || !password) {
+            if (!email || !password) {
                 showNotification('Заполните все поля', 'error');
                 return;
             }
@@ -183,14 +332,14 @@ function setupAuthFormHandler() {
                 if (isLoginMode) {
                     result = await window.browserDB.login(email, password);
                 } else {
-                    result = await window.browserDB.register(username, email, password);
+                    result = await window.browserDB.register(email, password);
                 }
 
                 if (result.success) {
                     // Store user data in localStorage
                     localStorage.setItem('user_data', JSON.stringify(result.user));
                     localStorage.setItem('user_id', result.user.id);
-                    
+
                     showNotification(result.message);
                     closeAuthModal();
                     updateUserUI(result.user);
@@ -293,16 +442,16 @@ async function loadUserProfile() {
         currentUser = result.user;
 
         // Update profile display
-        document.getElementById('profileUsername').textContent = result.user.username;
+        document.getElementById('profileUsername').textContent = result.user.email;
         document.getElementById('profileEmail').textContent = result.user.email;
-        document.getElementById('profileAvatar').textContent = result.user.username.charAt(0).toUpperCase();
+        document.getElementById('profileAvatar').textContent = result.user.email.charAt(0).toUpperCase();
         document.getElementById('profileCreatedAt').textContent = new Date(result.user.createdAt).toLocaleDateString('ru-RU');
-        document.getElementById('profileLastLogin').textContent = result.user.lastLogin ? 
+        document.getElementById('profileLastLogin').textContent = result.user.lastLogin ?
             new Date(result.user.lastLogin).toLocaleDateString('ru-RU') : 'Никогда';
         document.getElementById('profileOrdersCount').textContent = result.orders.length;
 
         // Update form fields
-        document.getElementById('profileUsernameInput').value = result.user.username;
+        document.getElementById('profileUsernameInput').value = result.user.email;
         document.getElementById('profileBio').value = result.user.profileData.bio || '';
 
     } catch (error) {
@@ -337,14 +486,24 @@ async function loadUserOrders() {
         ordersList.innerHTML = result.orders.map(order => `
             <div class="order-item">
                 <div class="order-header">
-                    <div class="order-product">${order.productName}</div>
+                    <div class="order-product">${order.productName} ${order.quantity > 1 ? `x${order.quantity}` : ''}</div>
                     <div class="order-status ${order.status}">${getStatusText(order.status)}</div>
                 </div>
                 <div class="order-details">
                     <div class="order-detail">
-                        <div class="order-detail-label">Цена</div>
+                        <div class="order-detail-label">Цена за единицу</div>
                         <div class="order-detail-value">${order.price}</div>
                     </div>
+                    ${order.quantity > 1 ? `
+                    <div class="order-detail">
+                        <div class="order-detail-label">Количество</div>
+                        <div class="order-detail-value">${order.quantity}</div>
+                    </div>
+                    <div class="order-detail">
+                        <div class="order-detail-label">Итого</div>
+                        <div class="order-detail-value">₽${(parsePrice(order.price) * order.quantity).toLocaleString()}</div>
+                    </div>
+                    ` : ''}
                     <div class="order-detail">
                         <div class="order-detail-label">Период</div>
                         <div class="order-detail-value">${order.period}</div>
@@ -548,12 +707,12 @@ function getStatusText(status) {
 // Profile form submit
 if (profileForm) profileForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const username = document.getElementById('profileUsernameInput').value.trim();
+
+    const email = document.getElementById('profileUsernameInput').value.trim();
     const bio = document.getElementById('profileBio').value.trim();
 
-    if (!username) {
-        showNotification('Имя пользователя обязательно', 'error');
+    if (!email) {
+        showNotification('Email обязателен', 'error');
         return;
     }
 
@@ -562,7 +721,7 @@ if (profileForm) profileForm.addEventListener('submit', async function(e) {
         if (!userId) return;
 
         const result = await window.browserDB.updateProfile(parseInt(userId), {
-            username,
+            email,
             profileData: { bio }
         });
 
@@ -572,7 +731,7 @@ if (profileForm) profileForm.addEventListener('submit', async function(e) {
 
         showNotification('Профиль обновлен');
         await loadUserProfile();
-        updateUserUI({ username });
+        updateUserUI({ email });
 
     } catch (error) {
         showNotification(error.message || 'Ошибка обновления профиля', 'error');
@@ -592,12 +751,12 @@ if (logoutBtn) logoutBtn.addEventListener('click', () => {
 function updateUserUI(user) {
     const userStatus = document.getElementById('userStatus');
     const authButtons = document.getElementById('authButtons');
-    
+
     if (user) {
         userStatus.style.display = 'flex';
         authButtons.style.display = 'none';
-        document.getElementById('userName').textContent = user.username;
-        document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+        document.getElementById('userName').textContent = user.email;
+        document.getElementById('userAvatar').textContent = user.email.charAt(0).toUpperCase();
     } else {
         userStatus.style.display = 'none';
         authButtons.style.display = 'flex';
@@ -612,15 +771,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('Database initialization failed:', error);
     }
-    
+
     // Initialize auth modal
     initializeAuthModal();
     setupAuthEventListeners();
     setupAuthFormHandler();
-    
+
+    // Initialize quantity modal
+    initializeQuantityModal();
+
     const userData = localStorage.getItem('user_data');
     const userId = localStorage.getItem('user_id');
-    
+
     if (userData && userId) {
         try {
             const user = JSON.parse(userData);
@@ -927,6 +1089,7 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
 
 // Initialize particles
 document.addEventListener('DOMContentLoaded', function() {

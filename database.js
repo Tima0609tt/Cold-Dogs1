@@ -23,7 +23,6 @@ class BrowserDatabase {
                 if (!db.objectStoreNames.contains('users')) {
                     const userStore = db.createObjectStore('users', { keyPath: 'id', autoIncrement: true });
                     userStore.createIndex('email', 'email', { unique: true });
-                    userStore.createIndex('username', 'username', { unique: true });
                 }
 
                 // Create orders store
@@ -31,6 +30,13 @@ class BrowserDatabase {
                     const orderStore = db.createObjectStore('orders', { keyPath: 'id', autoIncrement: true });
                     orderStore.createIndex('userId', 'userId', { unique: false });
                     orderStore.createIndex('createdAt', 'createdAt', { unique: false });
+                }
+
+                // Create news store
+                if (!db.objectStoreNames.contains('news')) {
+                    const newsStore = db.createObjectStore('news', { keyPath: 'id', autoIncrement: true });
+                    newsStore.createIndex('createdAt', 'createdAt', { unique: false });
+                    newsStore.createIndex('product', 'product', { unique: false });
                 }
             };
         });
@@ -40,7 +46,7 @@ class BrowserDatabase {
     async createUser(userData) {
         const transaction = this.db.transaction(['users'], 'readwrite');
         const store = transaction.objectStore('users');
-        
+
         return new Promise((resolve, reject) => {
             const request = store.add({
                 ...userData,
@@ -48,7 +54,7 @@ class BrowserDatabase {
                 lastLogin: null,
                 profileData: {}
             });
-            
+
             request.onsuccess = () => resolve({ id: request.result, ...userData });
             request.onerror = () => reject(request.error);
         });
@@ -58,13 +64,14 @@ class BrowserDatabase {
         const transaction = this.db.transaction(['users'], 'readonly');
         const store = transaction.objectStore('users');
         const index = store.index('email');
-        
+
         return new Promise((resolve, reject) => {
             const request = index.get(email);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
     }
+
 
     async getUserById(id) {
         const transaction = this.db.transaction(['users'], 'readonly');
@@ -92,18 +99,20 @@ class BrowserDatabase {
     async createOrder(orderData) {
         const transaction = this.db.transaction(['orders'], 'readwrite');
         const store = transaction.objectStore('orders');
-        
+
         return new Promise((resolve, reject) => {
             const request = store.add({
                 ...orderData,
+                quantity: orderData.quantity || 1,
                 status: orderData.status || 'pending',
                 createdAt: new Date().toISOString()
             });
-            
-            request.onsuccess = () => resolve({ 
-                id: request.result, 
-                ...orderData, 
-                status: orderData.status || 'pending' 
+
+            request.onsuccess = () => resolve({
+                id: request.result,
+                ...orderData,
+                quantity: orderData.quantity || 1,
+                status: orderData.status || 'pending'
             });
             request.onerror = () => reject(request.error);
         });
@@ -122,7 +131,7 @@ class BrowserDatabase {
     }
 
     // Auth operations
-    async register(username, email, password) {
+    async register(email, password) {
         try {
             // Check if user already exists
             const existingUser = await this.getUserByEmail(email);
@@ -135,14 +144,13 @@ class BrowserDatabase {
 
             // Create user
             const user = await this.createUser({
-                username,
                 email,
                 password: hashedPassword
             });
 
             return {
                 success: true,
-                user: { id: user.id, username, email },
+                user: { id: user.id, email },
                 message: 'Регистрация успешна'
             };
         } catch (error) {
@@ -174,7 +182,7 @@ class BrowserDatabase {
 
             return {
                 success: true,
-                user: { id: user.id, username: user.username, email: user.email },
+                user: { id: user.id, email: user.email },
                 message: 'Вход выполнен'
             };
         } catch (error) {
@@ -198,7 +206,6 @@ class BrowserDatabase {
                 success: true,
                 user: {
                     id: user.id,
-                    username: user.username,
                     email: user.email,
                     createdAt: user.createdAt,
                     lastLogin: user.lastLogin,
@@ -238,6 +245,57 @@ class BrowserDatabase {
         }
     }
 
+    // News operations
+    async createNews(newsData) {
+        const transaction = this.db.transaction(['news'], 'readwrite');
+        const store = transaction.objectStore('news');
+
+        return new Promise((resolve, reject) => {
+            const request = store.add({
+                ...newsData,
+                createdAt: new Date().toISOString()
+            });
+
+            request.onsuccess = () => resolve({ id: request.result, ...newsData });
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async getAllNews() {
+        const transaction = this.db.transaction(['news'], 'readonly');
+        const store = transaction.objectStore('news');
+        const index = store.index('createdAt');
+
+        return new Promise((resolve, reject) => {
+            const request = index.openCursor(null, 'prev'); // Most recent first
+            const news = [];
+
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    news.push(cursor.value);
+                    cursor.continue();
+                } else {
+                    resolve(news);
+                }
+            };
+
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async getNewsByProduct(product) {
+        const transaction = this.db.transaction(['news'], 'readonly');
+        const store = transaction.objectStore('news');
+        const index = store.index('product');
+
+        return new Promise((resolve, reject) => {
+            const request = index.getAll(product);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
     // Simple password hashing (for demo purposes)
     async hashPassword(password) {
         // Simple hash - in production use proper hashing like bcrypt
@@ -251,6 +309,51 @@ class BrowserDatabase {
     async verifyPassword(password, hashedPassword) {
         const hashedInput = await this.hashPassword(password);
         return hashedInput === hashedPassword;
+    }
+
+    // Initialize default news
+    async initializeDefaultNews() {
+        try {
+            const existingNews = await this.getAllNews();
+            if (existingNews.length === 0) {
+                const defaultNews = [
+                    {
+                        title: "Обновление Fish Bot v2.1",
+                        content: "Вышло крупное обновление Fish Bot! Добавлена поддержка новых видов рыбы, улучшена стабильность работы и исправлены все известные баги. Теперь бот работает еще эффективнее!",
+                        product: "Fish Bot",
+                        image: "https://imagizer.imageshack.com/img924/8665/RWWaE4.jpg",
+                        type: "update"
+                    },
+                    {
+                        title: "Новый продукт C+ уже доступен!",
+                        content: "Представляем вашему вниманию новый скрипт C+ для максимальной эффективности на каптах. Полная автоматизация процесса, высокая скорость и надежность гарантированы!",
+                        product: "C+",
+                        image: "https://imagizer.imageshack.com/img924/8665/RWWaE4.jpg",
+                        type: "new_product"
+                    },
+                    {
+                        title: "Специальное предложение на Fish Bot",
+                        content: "Только на этой неделе скидка 20% на подписку Fish Bot на 7 дней! Не упустите возможность сэкономить и протестировать нашего лучшего бота для рыбалки.",
+                        product: "Fish Bot",
+                        image: "https://imagizer.imageshack.com/img924/8665/RWWaE4.jpg",
+                        type: "promotion"
+                    },
+                    {
+                        title: "Завод скоро выйдет!",
+                        content: "Мы активно работаем над новым продуктом 'Завод'. Это будет революционное решение для автоматизации производственных процессов. Следите за обновлениями!",
+                        product: "Завод",
+                        image: "https://imagizer.imageshack.com/img924/8665/RWWaE4.jpg",
+                        type: "announcement"
+                    }
+                ];
+
+                for (const news of defaultNews) {
+                    await this.createNews(news);
+                }
+            }
+        } catch (error) {
+            console.error('Error initializing default news:', error);
+        }
     }
 }
 

@@ -60,6 +60,7 @@
         </div>
     </section>
 
+
     <!-- Products Section -->
     <section id="products" class="products">
         <div class="container">
@@ -207,10 +208,6 @@
             <h2 id="authTitle">Регистрация</h2>
             <form id="authForm" class="auth-form">
                 <div class="form-group">
-                    <label for="authUsername">Имя пользователя</label>
-                    <input id="authUsername" type="text" placeholder="Ваше имя" required>
-                </div>
-                <div class="form-group">
                     <label for="authEmail">Email</label>
                     <input id="authEmail" type="email" placeholder="you@example.com" required>
                 </div>
@@ -312,8 +309,8 @@
                     <h4>Настройки профиля</h4>
                     <form id="profileForm" class="profile-form">
                         <div class="form-group">
-                            <label for="profileUsernameInput">Имя пользователя</label>
-                            <input id="profileUsernameInput" type="text" required>
+                            <label for="profileUsernameInput">Email</label>
+                            <input id="profileUsernameInput" type="email" placeholder="you@example.com" required>
                         </div>
                         <div class="form-group">
                             <label for="profileBio">О себе</label>
@@ -325,6 +322,47 @@
                         <button class="profile-btn logout-btn" id="logoutBtn">Выйти</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quantity Selection Modal -->
+    <div id="quantityModal" class="modal">
+        <div class="modal-content quantity-modal-content">
+            <span class="close" id="quantityCloseBtn">&times;</span>
+            <div class="quantity-header">
+                <h2>Выберите количество</h2>
+                <div class="selected-product-info">
+                    <h3 id="selectedProductName">Продукт</h3>
+                    <p id="selectedProductPrice">Цена: ₽0</p>
+                </div>
+            </div>
+
+            <div class="quantity-selector">
+                <div class="quantity-controls">
+                    <button class="quantity-btn" id="decreaseQty">-</button>
+                    <span class="quantity-display" id="quantityValue">1</span>
+                    <button class="quantity-btn" id="increaseQty">+</button>
+                </div>
+                <div class="quantity-presets">
+                    <button class="preset-btn" data-qty="1">1</button>
+                    <button class="preset-btn" data-qty="2">2</button>
+                    <button class="preset-btn" data-qty="3">3</button>
+                    <button class="preset-btn" data-qty="5">5</button>
+                    <button class="preset-btn" data-qty="10">10</button>
+                </div>
+            </div>
+
+            <div class="quantity-total">
+                <p>Итого: <span id="totalPrice">₽0</span></p>
+            </div>
+
+            <div class="quantity-actions">
+                <button class="quantity-confirm-btn" id="confirmAddToCart">
+                    <i class="fas fa-shopping-cart"></i>
+                    Добавить в корзину
+                </button>
+                <button class="quantity-cancel-btn" id="cancelAddToCart">Отмена</button>
             </div>
         </div>
     </div>

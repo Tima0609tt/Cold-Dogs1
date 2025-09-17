@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
@@ -7,7 +9,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
 
 // Middleware
 app.use(cors());
@@ -30,7 +32,6 @@ function initDatabase() {
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -87,9 +88,9 @@ function authenticateToken(req, res, next) {
 // Routes
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { email, password } = req.body;
 
-        if (!username || !email || !password) {
+        if (!email || !password) {
             return res.status(400).json({ message: 'Все поля обязательны' });
         }
 
@@ -98,13 +99,13 @@ app.post('/api/register', async (req, res) => {
         }
 
         // Check if user already exists
-        db.get('SELECT id FROM users WHERE email = ? OR username = ?', [email, username], async (err, row) => {
+        db.get('SELECT id FROM users WHERE email = ?', [email], async (err, row) => {
             if (err) {
                 return res.status(500).json({ message: 'Ошибка базы данных' });
             }
 
             if (row) {
-                return res.status(400).json({ message: 'Пользователь с таким email или именем уже существует' });
+                return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
             }
 
             // Hash password
@@ -112,8 +113,8 @@ app.post('/api/register', async (req, res) => {
 
             // Insert new user
             db.run(
-                'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-                [username, email, hashedPassword],
+                'INSERT INTO users (email, password) VALUES (?, ?)',
+                [email, hashedPassword],
                 function(err) {
                     if (err) {
                         return res.status(500).json({ message: 'Ошибка создания пользователя' });
@@ -121,7 +122,7 @@ app.post('/api/register', async (req, res) => {
 
                     // Generate JWT token
                     const token = jwt.sign(
-                        { id: this.lastID, username, email },
+                        { id: this.lastID, email },
                         JWT_SECRET,
                         { expiresIn: '24h' }
                     );
@@ -129,7 +130,7 @@ app.post('/api/register', async (req, res) => {
                     res.json({
                         message: 'Регистрация успешна',
                         token,
-                        user: { id: this.lastID, username, email }
+                        user: { id: this.lastID, email }
                     });
                 }
             );
@@ -168,7 +169,7 @@ app.post('/api/login', async (req, res) => {
 
             // Generate JWT token
             const token = jwt.sign(
-                { id: user.id, username: user.username, email: user.email },
+                { id: user.id, email: user.email },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -176,7 +177,7 @@ app.post('/api/login', async (req, res) => {
             res.json({
                 message: 'Вход выполнен',
                 token,
-                user: { id: user.id, username: user.username, email: user.email }
+                user: { id: user.id, email: user.email }
             });
         });
     } catch (error) {
@@ -188,7 +189,7 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/profile', authenticateToken, (req, res) => {
     const userId = req.user.id;
 
-    db.get('SELECT id, username, email, created_at, last_login, profile_data FROM users WHERE id = ?', [userId], (err, user) => {
+    db.get('SELECT id, email, created_at, last_login, profile_data FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             return res.status(500).json({ message: 'Ошибка базы данных' });
         }
@@ -206,7 +207,6 @@ app.get('/api/profile', authenticateToken, (req, res) => {
             res.json({
                 user: {
                     id: user.id,
-                    username: user.username,
                     email: user.email,
                     created_at: user.created_at,
                     last_login: user.last_login,
@@ -221,26 +221,26 @@ app.get('/api/profile', authenticateToken, (req, res) => {
 // Update user profile
 app.put('/api/profile', authenticateToken, (req, res) => {
     const userId = req.user.id;
-    const { username, profile_data } = req.body;
+    const { email, profile_data } = req.body;
 
-    if (!username) {
-        return res.status(400).json({ message: 'Имя пользователя обязательно' });
+    if (!email) {
+        return res.status(400).json({ message: 'Email обязателен' });
     }
 
-    // Check if username is already taken by another user
-    db.get('SELECT id FROM users WHERE username = ? AND id != ?', [username, userId], (err, row) => {
+    // Check if email is already taken by another user
+    db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId], (err, row) => {
         if (err) {
             return res.status(500).json({ message: 'Ошибка базы данных' });
         }
 
         if (row) {
-            return res.status(400).json({ message: 'Имя пользователя уже занято' });
+            return res.status(400).json({ message: 'Email уже занят' });
         }
 
         // Update user
         db.run(
-            'UPDATE users SET username = ?, profile_data = ? WHERE id = ?',
-            [username, JSON.stringify(profile_data || {}), userId],
+            'UPDATE users SET email = ?, profile_data = ? WHERE id = ?',
+            [email, JSON.stringify(profile_data || {}), userId],
             function(err) {
                 if (err) {
                     return res.status(500).json({ message: 'Ошибка обновления профиля' });
