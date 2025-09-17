@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Создание Favicon</title>
+</head>
+<body>
+    <h2>Иконка для сайта Cold Scripts</h2>
+    <canvas id="canvas" width="32" height="32"></canvas>
+    <br><br>
+    <button onclick="downloadFavicon()">Скачать favicon.ico</button>
+    <button onclick="downloadPNG()">Скачать favicon.png</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Рисуем иконку
+        function drawIcon() {
+            // Фон
+            ctx.fillStyle = '#8B0000';
+            ctx.fillRect(0, 0, 32, 32);
+            
+            // Внешнее кольцо
+            ctx.strokeStyle = '#DAA520';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(16, 16, 14, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Среднее кольцо
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(16, 16, 10, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Внутреннее кольцо
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(16, 16, 6, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Центр
+            ctx.fillStyle = '#DAA520';
+            ctx.beginPath();
+            ctx.arc(16, 16, 3, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Точка в центре
+            ctx.fillStyle = '#8B0000';
+            ctx.beginPath();
+            ctx.arc(16, 16, 1, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        
+        function downloadFavicon() {
+            drawIcon();
+            canvas.toBlob(function(blob) {
+                const link = document.createElement('a');
+                link.download = 'favicon.ico';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            });
+        }
+        
+        function downloadPNG() {
+            drawIcon();
+            canvas.toBlob(function(blob) {
+                const link = document.createElement('a');
+                link.download = 'favicon.png';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            });
+        }
+        
+        // Рисуем при загрузке
+        drawIcon();
+    </script>
+</body>
+</html>
+

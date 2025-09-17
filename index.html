@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cold Scripts - Премиум скрипты и аксессуары</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <i class="fas fa-crosshairs"></i>
+                <span>Cold Scripts</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#products">Продукты</a></li>
+                <li><a href="#contact">Контакты</a></li>
+            </ul>
+            <div class="user-status" id="userStatus" style="display:none">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName"></span>
+                <button class="profile-btn" id="openProfileBtn">Профиль</button>
+            </div>
+            <div class="nav-actions" id="authButtons">
+                <button class="nav-auth-btn" id="openLoginBtn">Войти</button>
+                <button class="nav-register-btn" id="openRegisterBtn">Регистрация</button>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Cold Scripts поможет Всем</h1>
+            <button class="cta-button">
+                <i class="fas fa-shopping-cart"></i>
+                Смотреть продукты
+            </button>
+        </div>
+        <div class="hero-image">
+            <img src="https://imagizer.imageshack.com/img924/8665/RWWaE4.jpg" alt="БОТ AMAZING RP РЫБАЛКА" class="hero-fishing-image">
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products">
+        <div class="container">
+            <h2 class="section-title">Наши продукты</h2>
+            <p class="section-subtitle">Выберите лучшие решения для ваших потребностей</p>
+            
+            <div class="products-grid">
+                <!-- Product Card 1 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge">Популярно</div>
+                        <i class="fas fa-fish product-icon"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-title">Fish Bot</h3>
+                        <p class="product-description">Ваш надёжный помощник на рыбалке!<br>Позволяет ловить рыбу без участия рук — просто запускай и получай ресурсы автоматически.<br><br>✅ Популярный выбор игроков</p>
+                        <div class="product-features">
+                            <span class="feature-tag">Автоматическая рыбалка</span>
+                            <span class="feature-tag">Авто-сбор в багажник</span>
+                            <span class="feature-tag">Ловит даже в АФК</span>
+                        </div>
+                        <div class="product-price">
+                            <div class="price-options">
+                                <div class="price-option">
+                                    <span class="price">₽130</span>
+                                    <span class="price-period">1 день</span>
+                                </div>
+                                <div class="price-option">
+                                    <span class="price">₽450</span>
+                                    <span class="price-period">7 дней (экономия 18%)</span>
+                                </div>
+                                <div class="price-option">
+                                    <span class="price">₽1,200</span>
+                                    <span class="price-period">навсегда (лучшая цена!)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="product-button">
+                            <i class="fas fa-shopping-cart"></i>
+                            Добавить в корзину
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Card 2 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge">Новинка</div>
+                        <i class="fas fa-crosshairs product-icon"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-title">C+</h3>
+                        <p class="product-description">Скрипт для максимальной эффективности на каптах!<br>Всё, что нужно — это запустить, остальное сделает за тебя.</p>
+                        <div class="product-features">
+                            <span class="feature-tag">Полная автоматизация</span>
+                            <span class="feature-tag">Максимальная скорость</span>
+                            <span class="feature-tag">Работает стабильно</span>
+                        </div>
+                        <div class="product-price">
+                            <div class="price-options">
+                                <div class="price-option">
+                                    <span class="price">₽400</span>
+                                    <span class="price-period">3 дня</span>
+                                </div>
+                                <div class="price-option">
+                                    <span class="price">₽600</span>
+                                    <span class="price-period">7 дней (экономия 17%)</span>
+                                </div>
+                                <div class="price-option">
+                                    <span class="price">₽1,500</span>
+                                    <span class="price-period">навсегда (без ограничений)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="product-button">
+                            <i class="fas fa-shopping-cart"></i>
+                            Добавить в корзину
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Card 3 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge">Хит</div>
+                        <i class="fas fa-hammer product-icon"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-title">Завод</h3>
+                        <p class="product-description">Продукт скоро выйдет</p>
+                        <button class="product-button">
+                            <i class="fas fa-shopping-cart"></i>
+                            Добавить в корзину
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Свяжитесь с нами</h2>
+            <div class="contact-content">
+                <div class="telegram-contact">
+                    <a href="https://t.me/PopDod11" class="telegram-link" target="_blank">
+                        <i class="fab fa-telegram"></i>
+                        <span>Написать в Telegram</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-crosshairs"></i>
+                    <span>Cold Scripts</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#home">Главная</a>
+                    <a href="#products">Продукты</a>
+                    <a href="#contact">Контакты</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Cold Scripts. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <script src="database.js"></script>
+    <script src="script.js"></script>
+    
+    <!-- Auth Modals -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="authCloseBtn">&times;</span>
+            <h2 id="authTitle">Регистрация</h2>
+            <form id="authForm" class="auth-form">
+                <div class="form-group">
+                    <label for="authUsername">Имя пользователя</label>
+                    <input id="authUsername" type="text" placeholder="Ваше имя" required>
+                </div>
+                <div class="form-group">
+                    <label for="authEmail">Email</label>
+                    <input id="authEmail" type="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Пароль</label>
+                    <input id="authPassword" type="password" placeholder="Минимум 6 символов" minlength="6" required>
+                </div>
+                <button type="submit" class="auth-submit-btn" id="authSubmitBtn">Зарегистрироваться</button>
+                <div class="auth-switch">
+                    <span id="authSwitchText">Уже есть аккаунт? <a href="#" id="switchToLogin">Войти</a></span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content profile-modal-content">
+            <span class="close" id="profileCloseBtn">&times;</span>
+            <div class="profile-header">
+                <h2>Личный кабинет</h2>
+                <div class="user-avatar-large" id="profileAvatar">U</div>
+                <h3 id="profileUsername">Пользователь</h3>
+                <p id="profileEmail">user@example.com</p>
+            </div>
+            
+            <div class="profile-tabs">
+                <button class="tab-btn active" data-tab="profile">Профиль</button>
+                <button class="tab-btn" data-tab="subscriptions">Подписки</button>
+                <button class="tab-btn" data-tab="orders">История покупок</button>
+                <button class="tab-btn" data-tab="settings">Настройки</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Profile Tab -->
+                <div id="profile-tab" class="tab-pane active">
+                    <div class="profile-info">
+                        <h4>Информация о профиле</h4>
+                        <p><strong>Дата регистрации:</strong> <span id="profileCreatedAt">-</span></p>
+                        <p><strong>Последний вход:</strong> <span id="profileLastLogin">-</span></p>
+                        <p><strong>Всего заказов:</strong> <span id="profileOrdersCount">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Subscriptions Tab -->
+                <div id="subscriptions-tab" class="tab-pane">
+                    <h4>Мои подписки</h4>
+                    <div class="subscriptions-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-number" id="activeSubscriptions">0</div>
+                                <div class="stat-label">Активные подписки</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-number" id="totalDays">0</div>
+                                <div class="stat-label">Дней подписки</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="subscriptionsList" class="subscriptions-list">
+                        <div class="empty-subscriptions">
+                            <i class="fas fa-crown"></i>
+                            <p>У вас пока нет активных подписок</p>
+                            <button class="cta-button" onclick="document.querySelector('#products').scrollIntoView({behavior: 'smooth'})">
+                                <i class="fas fa-shopping-cart"></i>
+                                Купить подписку
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Tab -->
+                <div id="orders-tab" class="tab-pane">
+                    <h4>История покупок</h4>
+                    <div class="orders-filters">
+                        <button class="filter-btn active" data-filter="all">Все</button>
+                        <button class="filter-btn" data-filter="pending">В обработке</button>
+                        <button class="filter-btn" data-filter="completed">Выполненные</button>
+                        <button class="filter-btn" data-filter="cancelled">Отмененные</button>
+                    </div>
+                    <div id="ordersList" class="orders-list">
+                        <div class="empty-orders">
+                            <i class="fas fa-shopping-bag"></i>
+                            <p>У вас пока нет заказов</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-pane">
+                    <h4>Настройки профиля</h4>
+                    <form id="profileForm" class="profile-form">
+                        <div class="form-group">
+                            <label for="profileUsernameInput">Имя пользователя</label>
+                            <input id="profileUsernameInput" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileBio">О себе</label>
+                            <textarea id="profileBio" placeholder="Расскажите о себе..."></textarea>
+                        </div>
+                        <button type="submit" class="profile-btn">Сохранить изменения</button>
+                    </form>
+                    <div class="profile-actions">
+                        <button class="profile-btn logout-btn" id="logoutBtn">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
