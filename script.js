@@ -685,49 +685,167 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Intersection Observer for animations
+// Enhanced scroll animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0) rotate(0deg)';
+                entry.target.style.filter = 'blur(0px)';
+            }, index * 100); // Staggered animation
         }
     });
 }, observerOptions);
 
 // Observe elements for animation
-document.querySelectorAll('.product-card, .about-content, .contact-content').forEach(el => {
+document.querySelectorAll('.product-card, .about-content, .contact-content, .section-title, .hero-title, .hero-subtitle').forEach((el, index) => {
     el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    el.style.transform = 'translateY(50px) rotate(2deg)';
+    el.style.filter = 'blur(5px)';
+    el.style.transition = 'opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease';
     observer.observe(el);
 });
 
-// Parallax effect for hero section
+// Add scroll-triggered animations for specific elements
 window.addEventListener('scroll', () => {
     const scrolled = window.pageYOffset;
-    const hero = document.querySelector('.hero');
-    const floatingCard = document.querySelector('.floating-card');
-    
-    if (hero && floatingCard) {
-        const rate = scrolled * -0.5;
-        floatingCard.style.transform = `translateY(${rate}px)`;
+    const windowHeight = window.innerHeight;
+
+    // Animate hero elements on scroll
+    const heroTitle = document.querySelector('.hero-title');
+    if (heroTitle) {
+        const rect = heroTitle.getBoundingClientRect();
+        if (rect.top < windowHeight * 0.8) {
+            heroTitle.style.transform = 'scale(1.05)';
+            heroTitle.style.textShadow = '0 0 30px rgba(218, 165, 32, 0.5)';
+        } else {
+            heroTitle.style.transform = 'scale(1)';
+            heroTitle.style.textShadow = '2px 2px 4px rgba(0,0,0,0.3)';
+        }
+    }
+
+    // Animate product cards with different effects
+    document.querySelectorAll('.product-card').forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        if (rect.top < windowHeight * 0.9 && rect.bottom > 0) {
+            const progress = (windowHeight - rect.top) / windowHeight;
+            card.style.transform = `translateY(${Math.min(0, -15 * progress)}px) scale(${1 + progress * 0.02})`;
+        }
+    });
+
+    // Add floating animation to footer elements
+    const footer = document.querySelector('.footer');
+    if (footer) {
+        const rect = footer.getBoundingClientRect();
+        if (rect.top < windowHeight) {
+            const rate = (scrolled - rect.top + windowHeight) * 0.02;
+            footer.style.backgroundPositionY = `${rate}px`;
+        }
     }
 });
 
-// Add hover effects to product cards
+// Enhanced parallax effects
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+
+    // Hero section parallax
+    const hero = document.querySelector('.hero');
+    const heroContent = document.querySelector('.hero-content');
+    const heroImage = document.querySelector('.hero-image');
+    const floatingCard = document.querySelector('.floating-card');
+
+    if (hero) {
+        const rate = scrolled * 0.5;
+        hero.style.backgroundPositionY = `${rate * 0.1}px`;
+    }
+
+    if (heroContent) {
+        const rate = scrolled * -0.3;
+        heroContent.style.transform = `translateY(${rate}px)`;
+    }
+
+    if (heroImage) {
+        const rate = scrolled * -0.2;
+        heroImage.style.transform = `translateY(${rate}px)`;
+    }
+
+    if (floatingCard) {
+        const rate = scrolled * -0.5;
+        floatingCard.style.transform = `translateY(${rate}px)`;
+    }
+
+    // Products section parallax
+    const products = document.querySelector('.products');
+    if (products) {
+        const rect = products.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const rate = (scrolled - rect.top) * 0.1;
+            products.style.backgroundPositionY = `${rate}px`;
+        }
+    }
+
+    // Contact section parallax
+    const contact = document.querySelector('.contact');
+    if (contact) {
+        const rect = contact.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const rate = (scrolled - rect.top) * -0.05;
+            contact.style.transform = `translateY(${rate}px)`;
+        }
+    }
+});
+
+// Enhanced hover effects
 document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-10px) scale(1.02)';
+        this.style.transform = 'translateY(-15px) scale(1.03)';
+        this.style.boxShadow = '0 25px 50px rgba(139, 0, 0, 0.2)';
+        const icon = this.querySelector('.product-icon');
+        if (icon) {
+            icon.style.transform = 'scale(1.2) rotate(5deg)';
+            icon.style.transition = 'transform 0.3s ease';
+        }
     });
-    
+
     card.addEventListener('mouseleave', function() {
         this.style.transform = 'translateY(0) scale(1)';
+        this.style.boxShadow = '0 10px 30px rgba(139, 0, 0, 0.15)';
+        const icon = this.querySelector('.product-icon');
+        if (icon) {
+            icon.style.transform = 'scale(1) rotate(0deg)';
+        }
+    });
+});
+
+// Add hover effects to navigation links
+document.querySelectorAll('.nav-menu a').forEach(link => {
+    link.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-3px)';
+        this.style.textShadow = '0 2px 4px rgba(218, 165, 32, 0.3)';
+    });
+
+    link.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.textShadow = 'none';
+    });
+});
+
+// Add hover effects to buttons
+document.querySelectorAll('.cta-button, .product-button, .nav-auth-btn, .nav-register-btn').forEach(button => {
+    button.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-3px) scale(1.05)';
+        this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.2)';
+    });
+
+    button.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+        this.style.boxShadow = '';
     });
 });
 
@@ -810,12 +928,118 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize page
+// Initialize particles
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize particles.js
+    if (typeof particlesJS !== 'undefined') {
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 80,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#DAA520'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.5,
+                    random: false,
+                    anim: {
+                        enable: false,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: {
+                        enable: false,
+                        speed: 40,
+                        size_min: 0.1,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#8B0000',
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false,
+                    attract: {
+                        enable: false,
+                        rotateX: 600,
+                        rotateY: 1200
+                    }
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'repulse'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 400,
+                        line_linked: {
+                            opacity: 1
+                        }
+                    },
+                    bubble: {
+                        distance: 400,
+                        size: 40,
+                        duration: 2,
+                        opacity: 8,
+                        speed: 3
+                    },
+                    repulse: {
+                        distance: 200,
+                        duration: 0.4
+                    },
+                    push: {
+                        particles_nb: 4
+                    },
+                    remove: {
+                        particles_nb: 2
+                    }
+                }
+            },
+            retina_detect: true
+        });
+    }
+
     // Add loading animation
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.5s ease';
-    
+
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);

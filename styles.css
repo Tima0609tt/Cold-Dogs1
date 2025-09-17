@@ -5,6 +5,17 @@
     box-sizing: border-box;
 }
 
+/* Particles Background */
+#particles-js {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
 :root {
     --primary-burgundy: #8B0000;
     --dark-burgundy: #5C0000;
